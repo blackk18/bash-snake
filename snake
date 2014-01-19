@@ -1,0 +1,495 @@
+#!/bin/bash
+
+COLOR_BLACK=0
+COLOR_RED=1
+COLOR_GREEN=2
+COLOR_YELLOW=3
+COLOR_BLUE=4
+COLOR_MAGENTA=5
+COLOR_CYAN=6
+COLOR_WHITE=7
+
+
+FOOD_GRASS=1
+FOOD_MEAT=2
+FOOD_LEMON=3
+FOOD_LAST=4
+
+
+map_width=20
+map_height=20
+
+
+map=()
+snake_x=()
+snake_y=()
+
+
+run=1
+
+
+function textcolor () {
+  local color=$1
+  tput setaf $color 
+}
+
+
+function bgcolor () {
+  local color=$1
+  tput setab $color
+}
+
+
+function gotoxy () {
+  local y=$2
+  local x=$1
+  tput cup $y $x
+}
+
+
+function readkey () {
+  gotoxy 100 100
+  read -t 0.00812 -n 1 -s $1
+  gotoxy 100 100
+}
+
+
+function init_map () {
+  local map_width=$1
+  local map_height=$2
+
+  for (( y=0; $y<$map_height; ++y )); do
+    for (( x=0; $x<$map_width; ++x )); do
+      map[$(( x + y * map_width ))]=0
+    done
+  done
+}
+
+
+function spawn_food () {
+  local map_width=$1
+  local map_height=$2
+
+  food_x=$(( $RANDOM % map_width ))
+  food_y=$(( $RANDOM % map_height ))
+  food_type=$(( $RANDOM % FOOD_LAST))
+
+  if [ $food_type -eq 0 ]; then
+    food_type=$FOOD_GRASS
+  fi
+
+  map[$(( food_x + food_y * map_width ))]=$food_type
+}
+
+
+function draw_food () {
+  local food_x=$1
+  local food_y=$2
+  local food_type=$3
+
+  gotoxy $food_x $food_y
+  case $food_type in
+    $FOOD_GRASS)
+      bgcolor $COLOR_GREEN
+      textcolor $COLOR_WHITE
+      echo "#"
+    ;;
+    $FOOD_MEAT)
+      bgcolor $COLOR_RED
+      echo " "
+    ;;
+    $FOOD_LEMON)
+      bgcolor $COLOR_YELLOW
+      echo " "
+    ;;
+  esac
+}
+
+
+function move_snake () {
+  local x=$1 
+  local y=$2
+  local extend=$3
+  local length=${#snake_x[@]}
+  local last=$(( length - 1 ))
+
+  snake_x[length]=$(( ${snake_x[$last]} + $x ))
+  snake_y[length]=$(( ${snake_y[$last]} + $y ))
+
+  if [ "$extend" != "true" ]; then
+    snake_x=("${snake_x[@]:1}")
+    snake_y=("${snake_y[@]:1}")
+  fi
+}
+
+
+function is_collision_with_food () {
+  local point_x=$1
+  local point_y=$2
+  local map_width=$3
+  if [ ${map[$(( point_x + point_y*map_width ))]} -ne 0 ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+
+function draw_snake () {
+  local color=$1
+  local length=${#snake_x[@]}
+
+  bgcolor $color
+  for (( i=0; $i<$length; ++i )); do
+    gotoxy ${snake_x[$i]} ${snake_y[$i]}
+    echo " "
+  done
+}
+
+
+function draw_snake_head () {
+  local color=$1
+  local last=$(( ${#snake_x[@]} - 1 ))  
+  bgcolor $color
+  gotoxy ${snake_x[$last]} ${snake_y[$last]}
+  echo " "
+}
+
+
+function clear_snake () {
+  local color=$1
+  bgcolor $color
+  gotoxy ${snake_x[0]} ${snake_y[0]}
+  echo " "
+}
+
+
+function is_collision_with_map () {
+  local point_x=$1
+  local point_y=$2
+  local map_width=$3
+  local map_height=$4
+  if [ $point_x -ge $map_width -o $point_y -ge $map_height -o $point_x -lt 0 -o $point_y -lt 0 ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+
+function is_collision_with_snake () {
+  local snake_head_x=$1
+  local snake_head_y=$2
+  local last=$(( ${#snake_x[@]} - 1 ))
+  for (( i=0; $i<$last; ++i )); do
+    if [ $snake_head_x -eq ${snake_x[$i]} -a $snake_head_y -eq ${snake_y[$i]} ]; then
+      echo 1
+      return
+    fi
+  done
+  echo 0
+}
+
+
+function draw_map () {
+  local color=$1
+  map=""
+  for (( y=0; $y<$map_height; ++y )); do
+    for (( x=0; $x<$map_width; ++x )); do
+      map="$map "
+    done
+    map=$map"\n"
+  done
+  bgcolor $color
+  echo -e "$map"
+}
+
+
+function game_lost () {
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_RED
+  clear
+  echo "Przegrałeś"
+  wait_for_continue
+  textcolor $COLOR_WHITE
+}
+
+
+function game_won () {
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_GREEN
+  clear
+  echo "Wygrałeś."
+  textcolor $COLOR_WHITE
+}
+
+
+function game_next_level () {
+  local level=$1
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_GREEN
+  clear
+  echo "Przechodzisz do poziomu nr $level"
+  wait_for_continue
+  textcolor $COLOR_WHITE
+}
+
+
+function draw_score () {
+  local score=$1
+  local map_height=$2
+  gotoxy 0 $(( map_height + 1 ))
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_WHITE
+  echo -n "Zjedzonych: "
+  textcolor $COLOR_YELLOW
+  echo -n $score
+}
+
+
+function draw_needed () {
+  local needed_score=$1
+  local map_height=$2
+  gotoxy 20 $(( map_height + 1 ))
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_WHITE
+  echo -n "Potrzebnych: "
+  textcolor $COLOR_YELLOW
+  echo -n $needed_score
+}
+
+
+function draw_level () {
+  local level=$1
+  local map_height=$2
+  gotoxy 20 $(( map_height + 1 ))
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_WHITE
+  echo -n "Poziom: "
+  textcolor $COLOR_CYAN
+  echo $level
+}
+
+
+function draw_hud () {
+  local map_height=$1
+
+  gotoxy 0 $(( map_height + 2 ))
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_MAGENTA
+  echo -n "q"
+  textcolor $COLOR_WHITE
+  echo " - zakończ z grę"
+}
+
+
+function draw_eaten () {
+  local food_type=$1
+  local map_height=$2
+  bgcolor $COLOR_BLACK
+  textcolor $COLOR_WHITE
+  gotoxy 0 $map_height
+  echo "                                                 ";
+  gotoxy 0 $map_height
+  echo -n "Mniam! Zjadłem "
+  case $food_type in
+    $FOOD_GRASS)
+      echo "pyszną trawę"
+    ;;
+    $FOOD_MEAT)
+      echo "soczyste mięso"
+    ;;
+    $FOOD_LEMON)
+      echo "kwaśną cytrynę"
+    ;;
+    *)
+      echo "coś dobrego"
+    ;;
+  esac
+}
+
+
+function wait_for_continue () {
+  echo "Wciśnij 'k' aby kontunuować ..."
+  k="x"
+  until [ "$k" == "k" ]; do
+    read -n 1 -s k
+  done
+}
+
+
+function game () {
+
+  local level=$1
+
+  play=1
+  input=" "
+
+  vel_x=1
+  vel_y=0
+
+  snake_x=(1 2 3 4 5)
+  snake_y=(1 1 1 1 1)
+
+  map=()
+
+  bgcolor $COLOR_BLACK
+  clear
+
+  score=0
+  needed_score=$(( level*5 ))
+
+  current_time=$(( $(date +%s%N)/1000000 ))
+  last_time=current_time
+  delta_time=0
+  accummulated_time=0
+
+  init_map $map_width $map_height
+  spawn_food $map_width $map_height
+  draw_map $COLOR_WHITE $map_width $map_height
+  draw_food $food_x $food_y $food_type
+  draw_score $score $map_height
+  draw_hud $map_height
+  draw_snake $COLOR_GREEN
+  draw_level $level $map_height
+  draw_needed $needed_score $map_height
+
+  while [ $play -eq 1 ]; do
+    
+    current_time=$(( $(date +%s%N)/1000000 ))
+    delta_time=$(( current_time - last_time ))
+    last_time=$current_time
+    accummulated_time=$(( accummulated_time + delta_time ))
+
+    readkey input
+
+    case $input in
+      "")
+      ;;
+      d)
+        if [ $vel_x -ne -1 ]; then
+          vel_x=1
+          vel_y=0
+        fi
+      ;;
+      a)
+        if [ $vel_x -ne 1 ]; then
+          vel_x=-1
+          vel_y=0
+        fi
+      ;;
+      w)
+        if [ $vel_y -ne 1 ]; then
+          vel_y=-1
+          vel_x=0
+        fi
+      ;;
+      s)
+        if [ $vel_y -ne -1 ]; then
+          vel_y=1
+          vel_x=0
+        fi
+      ;;
+      q)
+        run=0
+        game_result="game_stopped"
+        return 0
+      ;;
+      *)
+      ;;
+    esac
+    input=""
+
+    while [ $accummulated_time -gt 0 ]; do
+      accummulated_time=$(( accummulated_time - 50 ))
+
+      clear_snake $COLOR_WHITE;
+      last=$(( ${#snake_x[@]} - 1 ))
+      snake_last_x=$(( ${snake_x[$last]} + vel_x ))
+      snake_last_y=$(( ${snake_y[$last]} + vel_y ))
+      if [ $(is_collision_with_map $snake_last_x $snake_last_y $map_width $map_height) -eq 1 ]; then
+        game_result=lost
+        return 0
+      elif [ $(is_collision_with_food $snake_last_x $snake_last_y $map_width) -eq 1 ]; then
+        move_snake $vel_x $vel_y true
+        draw_eaten ${map[$(( snake_last_x + $snake_last_y * map_width ))]} $map_height
+        map[$(( snake_last_x + snake_last_y * map_width ))]=0
+        spawn_food $map_width $map_height
+        draw_food $food_x $food_y $food_type
+        spawn_food $map_width $map_height
+        draw_food $food_x $food_y $food_type
+        score=$(( score + 1 ))
+        draw_score $score $map_height
+      elif [ $(is_collision_with_snake $snake_last_x $snake_last_y) -eq 1 ]; then
+        game_result=lost
+        return 0
+      elif [ $score -eq $(( $level * 5 )) ]; then
+        game_result=won
+        return 0
+      else
+        move_snake $vel_x $vel_y
+      fi
+      draw_snake_head $COLOR_GREEN
+    done
+  done
+}
+
+
+function main_menu () {
+  clear
+  textcolor $COLOR_GREEN
+  echo "SNEJK w bashu by pczarnota@wi.zut.edu.pl"
+  textcolor $COLOR_WHITE
+  echo
+  echo "SNEJK w bashu to emocjonująca gra akcji łącząca elementy zarówno przygodowe"
+  echo "jak i strategiczne. Poczuj smak adrenaliny poruszając się wężem w czterech "
+  echo "kierunkach świata. Zjadaj jedzenie porozrzucane po planszy. Przygotuj się na"
+  echo "wiele godzin niezapomnianej rozrywki. Podejmuj decyzję i zobacz jak wpływają"
+  echo "one na fabułe gry."
+  echo
+  echo Sterowanie wezem - W, S, A, D
+  textcolor $COLOR_CYAN
+  echo "Aby rozpocząć przygodę wcisnij dowolny klawisz."
+
+  read -n 1 -s
+}
+
+
+stty -echo
+main_menu
+game_result=won
+level=1
+while [ $run -eq 1 ]; do
+  map_width=$((90 - 10 * $level ))
+  game $level
+  if [ $game_result == "won" ]; then
+    level=$(( level + 1))
+
+    if [ $level -gt 8 ]; then
+      sleep 0.8
+      game_won
+      read -p "Czy chcesz zagrać jeszcze raz (t/n)" -n 1 more
+
+      if [ $more == "n" ]; then
+        run=0
+      fi
+
+      level=0
+    else
+      sleep 0.8
+      game_next_level $level
+    fi
+
+  elif [ $game_result == "lost" ]; then
+    sleep 0.8
+    game_lost
+    level=1
+  else 
+    echo ""
+  fi
+done
+
+
+stty echo
+bgcolor $COLOR_BLACK
+clear
