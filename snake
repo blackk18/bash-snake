@@ -49,7 +49,7 @@ function gotoxy () {
 
 function readkey () {
   gotoxy 100 100
-  read -t 0.00812 -n 1 -s $1
+  read -s $1
   gotoxy 100 100
 }
 
@@ -113,8 +113,8 @@ function move_snake () {
   local length=${#snake_x[@]}
   local last=$(( length - 1 ))
 
-  snake_x[length]=$(( ${snake_x[$last]} + $x ))
-  snake_y[length]=$(( ${snake_y[$last]} + $y ))
+  snake_x[$length]=$(( ${snake_x[$last]} + $x ))
+  snake_y[$length]=$(( ${snake_y[$last]} + $y ))
 
   if [ "$extend" != "true" ]; then
     snake_x=("${snake_x[@]:1}")
@@ -193,7 +193,7 @@ function is_collision_with_snake () {
 
 function draw_map () {
   local color=$1
-  map=""
+  local map=""
   for (( y=0; $y<$map_height; ++y )); do
     for (( x=0; $x<$map_width; ++x )); do
       map="$map "
@@ -353,7 +353,6 @@ function game () {
   draw_snake $COLOR_GREEN
   draw_level $level $map_height
   draw_needed $needed_score $map_height
-
   while [ $play -eq 1 ]; do
     
     current_time=$(( $(date +%s%N)/1000000 ))
@@ -399,7 +398,6 @@ function game () {
       ;;
     esac
     input=""
-
     while [ $accummulated_time -gt 0 ]; do
       accummulated_time=$(( accummulated_time - 50 ))
 
@@ -455,7 +453,7 @@ function main_menu () {
 }
 
 
-stty -echo
+stty -echo -icanon time 0 min 0
 main_menu
 game_result=won
 level=1
@@ -491,5 +489,6 @@ done
 
 
 stty echo
+stty sane
 bgcolor $COLOR_BLACK
 clear
