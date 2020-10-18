@@ -9,7 +9,7 @@
 
 > SNAKE in bash is an exciting action game which connects the elements of both
 > adventure and stategic game genres. Feel the taste of adrenaline by moving the snake
-> in four cardinal diractions. Hunt and capture the food scattered around
+> in four cardinal directions. Hunt and capture the food scattered around
 > the board. Brace yourself for many hours of unforgettable play. Make
 > decisions and see how the consequences affect the plot of the game.
 > :)
