@@ -3,7 +3,7 @@
 A classic snake game written in bash
 
 <p align="center">
-![logo](logo.gif)
+    <img alt="logo" src="logo.gif" />
 <p>
 
 
