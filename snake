@@ -209,7 +209,7 @@ function game_lost () {
   bgcolor $COLOR_BLACK
   textcolor $COLOR_RED
   clear
-  echo "Przegrałeś"
+  echo "You lost"
   wait_for_continue
   textcolor $COLOR_WHITE
 }
@@ -219,7 +219,7 @@ function game_won () {
   bgcolor $COLOR_BLACK
   textcolor $COLOR_GREEN
   clear
-  echo "Wygrałeś."
+  echo "You won."
   textcolor $COLOR_WHITE
 }
 
@@ -229,7 +229,7 @@ function game_next_level () {
   bgcolor $COLOR_BLACK
   textcolor $COLOR_GREEN
   clear
-  echo "Przechodzisz do poziomu nr $level"
+  echo "You go to level $level"
   wait_for_continue
   textcolor $COLOR_WHITE
 }
@@ -241,7 +241,7 @@ function draw_score () {
   gotoxy 0 $(( map_height + 1 ))
   bgcolor $COLOR_BLACK
   textcolor $COLOR_WHITE
-  echo -n "Zjedzonych: "
+  echo -n "Eaten: "
   textcolor $COLOR_YELLOW
   echo -n $score
 }
@@ -253,7 +253,7 @@ function draw_needed () {
   gotoxy 20 $(( map_height + 1 ))
   bgcolor $COLOR_BLACK
   textcolor $COLOR_WHITE
-  echo -n "Potrzebnych: "
+  echo -n "Needed: "
   textcolor $COLOR_YELLOW
   echo -n $needed_score
 }
@@ -265,7 +265,7 @@ function draw_level () {
   gotoxy 20 $(( map_height + 1 ))
   bgcolor $COLOR_BLACK
   textcolor $COLOR_WHITE
-  echo -n "Poziom: "
+  echo -n "Level: "
   textcolor $COLOR_CYAN
   echo $level
 }
@@ -279,7 +279,7 @@ function draw_hud () {
   textcolor $COLOR_MAGENTA
   echo -n "q"
   textcolor $COLOR_WHITE
-  echo " - zakończ z grę"
+  echo " - finish game"
 }
 
 
@@ -291,26 +291,26 @@ function draw_eaten () {
   gotoxy 0 $map_height
   echo "                                                 ";
   gotoxy 0 $map_height
-  echo -n "Mniam! Zjadłem "
+  echo -n "Yummy! I ate "
   case $food_type in
     $FOOD_GRASS)
-      echo "pyszną trawę"
+      echo "delicious grass"
     ;;
     $FOOD_MEAT)
-      echo "soczyste mięso"
+      echo "juicy meat"
     ;;
     $FOOD_LEMON)
-      echo "kwaśną cytrynę"
+      echo "sour lemon"
     ;;
     *)
-      echo "coś dobrego"
+      echo "something good"
     ;;
   esac
 }
 
 
 function wait_for_continue () {
-  echo "Wciśnij 'k' aby kontunuować ..."
+  echo "Press 'k' to continue..."
   k="x"
   until [ "$k" == "k" ]; do
     read -n 1 -s k
@@ -436,18 +436,24 @@ function game () {
 function main_menu () {
   clear
   textcolor $COLOR_GREEN
-  echo "SNEJK w bashu by pczarnota@wi.zut.edu.pl"
+  echo "SNAKE in bash by p@czarnota.io"
   textcolor $COLOR_WHITE
   echo
-  echo "SNEJK w bashu to emocjonująca gra akcji łącząca elementy zarówno przygodowe"
-  echo "jak i strategiczne. Poczuj smak adrenaliny poruszając się wężem w czterech "
-  echo "kierunkach świata. Zjadaj jedzenie porozrzucane po planszy. Przygotuj się na"
-  echo "wiele godzin niezapomnianej rozrywki. Podejmuj decyzję i zobacz jak wpływają"
-  echo "one na fabułe gry."
+  echo "SNAKE in bash is an exciting action game which connects the elements of both"
+  echo "and stategic game genres. Feel the taste of adrenaline by moving the snake"
+  echo "in four cardinal diractions. Hunt and capture the food scattered around"
+  echo "the board. Brace yourself for many hours of unforgettable play. Make"
+  echo "decisions and see how the consequences affect the plot of the game"
   echo
-  echo Sterowanie wezem - W, S, A, D
+  echo "Snake controls:"
+  echo
+  echo "    W - go north"
+  echo "    S - go south"
+  echo "    A - go west"
+  echo "    D - go east"
+  echo
   textcolor $COLOR_CYAN
-  echo "Aby rozpocząć przygodę wcisnij dowolny klawisz."
+  echo "To start you adventure, press any key."
 
   read -n 1 -s
 }
@@ -466,7 +472,7 @@ while [ $run -eq 1 ]; do
     if [ $level -gt 8 ]; then
       sleep 0.8
       game_won
-      read -p "Czy chcesz zagrać jeszcze raz (t/n)" -n 1 more
+      read -p "Do you want to play again (y/n)" -n 1 more
 
       if [ $more == "n" ]; then
         run=0
