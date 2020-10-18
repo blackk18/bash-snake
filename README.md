@@ -1,11 +1,11 @@
-# Snake
 
-A classic snake game written in bash
 
 <p align="center">
     <img alt="logo" src="logo.gif" />
+    A classic snake game written in bash
 <p>
 
+# About
 
 > SNAKE in bash is an exciting action game which connects the elements of both
 > and stategic game genres. Feel the taste of adrenaline by moving the snake
