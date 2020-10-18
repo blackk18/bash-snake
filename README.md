@@ -30,3 +30,7 @@ And have fun!
     A - go west
     D - go east
 ```
+
+# License
+
+Snake is licensed under GPL. See [LICENSE](LICENSE) for more details.
