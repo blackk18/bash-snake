@@ -9,7 +9,8 @@ A classic snake game written in bash
 > and stategic game genres. Feel the taste of adrenaline by moving the snake
 > in four cardinal diractions. Hunt and capture the food scattered around
 > the board. Brace yourself for many hours of unforgettable play. Make
-> decisions and see how the consequences affect the plot of the game
+> decisions and see how the consequences affect the plot of the game.
+> :)
 
 # How to play
 
