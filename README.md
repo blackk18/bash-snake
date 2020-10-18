@@ -1,7 +1,7 @@
 
 
 <p align="center">
-    <img alt="logo" src="logo.gif" />
+    <img alt="logo" src="logo.gif" /> </br>
     A classic snake game written in bash
 <p>
 
