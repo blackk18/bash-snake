@@ -1,12 +1,15 @@
-# snake
+# Snake
+
+A classic snake game written in bash
 
 ![logo](logo.gif)
 
-SNAKE in bash is an exciting action game which connects the elements of both
-and stategic game genres. Feel the taste of adrenaline by moving the snake
-in four cardinal diractions. Hunt and capture the food scattered around
-the board. Brace yourself for many hours of unforgettable play. Make
-decisions and see how the consequences affect the plot of the game
+
+> SNAKE in bash is an exciting action game which connects the elements of both
+> and stategic game genres. Feel the taste of adrenaline by moving the snake
+> in four cardinal diractions. Hunt and capture the food scattered around
+> the board. Brace yourself for many hours of unforgettable play. Make
+> decisions and see how the consequences affect the plot of the game
 
 # How to play
 
@@ -16,7 +19,9 @@ Just run the script
 $ ./snake
 ```
 
-Snake controls:
+And have fun!
+
+## Controls:
 
 ```
     W - go north
