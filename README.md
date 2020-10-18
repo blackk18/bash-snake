@@ -2,7 +2,9 @@
 
 A classic snake game written in bash
 
+<p align="center">
 ![logo](logo.gif)
+<p>
 
 
 > SNAKE in bash is an exciting action game which connects the elements of both
